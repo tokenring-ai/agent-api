@@ -1,0 +1,17 @@
+{
+  "name": "@tokenring-ai/agent-api",
+  "version": "0.1.0",
+  "description": "WebSocket API for TokenRing agents",
+  "dependencies": {
+    "@tokenring-ai/agent": "0.1.0",
+    "@tokenring-ai/web-host": "0.1.0"
+  },
+  "exports": {
+    ".": "./index.ts",
+    "./*": "./*.ts",
+    "./client": "./client.ts"
+  },
+  "types": "./index.ts",
+  "license": "MIT",
+  "type": "module"
+}
