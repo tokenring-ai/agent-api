@@ -4,7 +4,8 @@
   "description": "WebSocket API for TokenRing agents",
   "dependencies": {
     "@tokenring-ai/agent": "0.1.0",
-    "@tokenring-ai/web-host": "0.1.0"
+    "@tokenring-ai/web-host": "0.1.0",
+    "fastify": "^5.6.1"
   },
   "exports": {
     ".": "./index.ts",
