@@ -1,8 +1,9 @@
+import {AgentConfigService} from "@tokenring-ai/agent";
 import Agent from "@tokenring-ai/agent/Agent";
+import {AgentEventEnvelope} from "@tokenring-ai/agent/AgentEvents";
 import AgentTeam from "@tokenring-ai/agent/AgentTeam";
-import { AgentEventEnvelope } from "@tokenring-ai/agent/AgentEvents";
-import type { WebResource } from "@tokenring-ai/web-host/types";
-import type { FastifyInstance } from "fastify";
+import type {WebResource} from "@tokenring-ai/web-host/types";
+import type {FastifyInstance} from "fastify";
 
 type ClientMessage =
   | { type: "createAgent"; agentType: string }
@@ -62,7 +63,8 @@ export default class AgentAPIResource implements WebResource {
               break;
 
             case "createAgent":
-              const agent = await this.agentTeam.createAgent(msg.agentType);
+              const agentConfigService = this.agentTeam.requireService(AgentConfigService);
+              const agent = await agentConfigService.spawnAgent(msg.agentType, this.agentTeam);
               send({ type: "agentCreated", agentId: agent.id, name: agent.options.name });
               break;
 
