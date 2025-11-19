@@ -32,15 +32,16 @@ export class AgentClient {
   private ws: WebSocket | null = null;
   private listeners: Map<string, Set<(data: any) => void>> = new Map();
 
-  constructor(private url: string = `ws://${window.location.host}/ws`) {}
+  constructor(private url: string = `ws://${window.location.host}/ws`) {
+  }
 
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.ws = new WebSocket(this.url);
-      
+
       this.ws.onopen = () => resolve();
       this.ws.onerror = (err) => reject(err);
-      
+
       this.ws.onmessage = (event) => {
         const msg: ServerMessage = JSON.parse(event.data);
         this.emit(msg.type, msg);
@@ -67,6 +68,30 @@ export class AgentClient {
     this.listeners.get(event)?.delete(callback);
   }
 
+  listAgents(): void {
+    this.send({type: "listAgents"});
+  }
+
+  createAgent(agentType: string): void {
+    this.send({type: "createAgent", agentType});
+  }
+
+  connectAgent(agentId: string): void {
+    this.send({type: "connectAgent", agentId});
+  }
+
+  sendInput(message: string): void {
+    this.send({type: "input", message});
+  }
+
+  sendHumanResponse(sequence: number, response: any): void {
+    this.send({type: "humanResponse", sequence, response});
+  }
+
+  deleteAgent(agentId: string): void {
+    this.send({type: "deleteAgent", agentId});
+  }
+
   private emit(event: string, data: any): void {
     this.listeners.get(event)?.forEach(cb => cb(data));
   }
@@ -76,29 +101,5 @@ export class AgentClient {
       throw new Error("WebSocket not connected");
     }
     this.ws.send(JSON.stringify(msg));
-  }
-
-  listAgents(): void {
-    this.send({ type: "listAgents" });
-  }
-
-  createAgent(agentType: string): void {
-    this.send({ type: "createAgent", agentType });
-  }
-
-  connectAgent(agentId: string): void {
-    this.send({ type: "connectAgent", agentId });
-  }
-
-  sendInput(message: string): void {
-    this.send({ type: "input", message });
-  }
-
-  sendHumanResponse(sequence: number, response: any): void {
-    this.send({ type: "humanResponse", sequence, response });
-  }
-
-  deleteAgent(agentId: string): void {
-    this.send({ type: "deleteAgent", agentId });
   }
 }

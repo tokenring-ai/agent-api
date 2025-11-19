@@ -24,10 +24,11 @@ type ServerMessage =
 export default class AgentAPIResource implements WebResource {
   name = "AgentAPI";
 
-  constructor(private agentTeam: AgentTeam) {}
+  constructor(private agentTeam: AgentTeam) {
+  }
 
   async register(server: FastifyInstance): Promise<void> {
-    server.get("/ws", { websocket: true }, (socket, req) => {
+    server.get("/ws", {websocket: true}, (socket, req) => {
       let currentAgent: Agent | null = null;
       let eventAbortController: AbortController | null = null;
 
@@ -39,11 +40,11 @@ export default class AgentAPIResource implements WebResource {
         eventAbortController = new AbortController();
         try {
           for await (const event of agent.events(eventAbortController.signal)) {
-            send({ type: "event", event });
+            send({type: "event", event});
           }
         } catch (err) {
           if (!eventAbortController.signal.aborted) {
-            send({ type: "error", message: `Event loop error: ${err}` });
+            send({type: "error", message: `Event loop error: ${err}`});
           }
         }
       };
@@ -59,19 +60,19 @@ export default class AgentAPIResource implements WebResource {
                 name: a.options.name,
                 type: a.options.type,
               }));
-              send({ type: "agentList", agents });
+              send({type: "agentList", agents});
               break;
 
             case "createAgent":
               const agentConfigService = this.agentTeam.requireService(AgentConfigService);
               const agent = await agentConfigService.spawnAgent(msg.agentType, this.agentTeam);
-              send({ type: "agentCreated", agentId: agent.id, name: agent.options.name });
+              send({type: "agentCreated", agentId: agent.id, name: agent.options.name});
               break;
 
             case "connectAgent":
               const targetAgent = this.agentTeam.getAgent(msg.agentId);
               if (!targetAgent) {
-                send({ type: "error", message: "Agent not found" });
+                send({type: "error", message: "Agent not found"});
                 break;
               }
               if (eventAbortController) {
@@ -79,20 +80,20 @@ export default class AgentAPIResource implements WebResource {
               }
               currentAgent = targetAgent;
               startEventLoop(currentAgent);
-              send({ type: "agentConnected", agentId: currentAgent.id });
+              send({type: "agentConnected", agentId: currentAgent.id});
               break;
 
             case "input":
               if (!currentAgent) {
-                send({ type: "error", message: "No agent connected" });
+                send({type: "error", message: "No agent connected"});
                 break;
               }
-              await currentAgent.handleInput({ message: msg.message });
+              await currentAgent.handleInput({message: msg.message});
               break;
 
             case "humanResponse":
               if (!currentAgent) {
-                send({ type: "error", message: "No agent connected" });
+                send({type: "error", message: "No agent connected"});
                 break;
               }
               currentAgent.sendHumanResponse(msg.sequence, msg.response);
@@ -102,12 +103,12 @@ export default class AgentAPIResource implements WebResource {
               const agentToDelete = this.agentTeam.getAgent(msg.agentId);
               if (agentToDelete) {
                 await this.agentTeam.deleteAgent(agentToDelete);
-                send({ type: "agentDeleted", agentId: msg.agentId });
+                send({type: "agentDeleted", agentId: msg.agentId});
               }
               break;
           }
         } catch (err) {
-          send({ type: "error", message: `${err}` });
+          send({type: "error", message: `${err}`});
         }
       });
 
