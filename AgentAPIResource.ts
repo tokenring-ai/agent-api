@@ -1,7 +1,7 @@
-import {AgentConfigService} from "@tokenring-ai/agent";
+import {AgentManager} from "@tokenring-ai/agent";
 import Agent from "@tokenring-ai/agent/Agent";
 import {AgentEventEnvelope} from "@tokenring-ai/agent/AgentEvents";
-import AgentTeam from "@tokenring-ai/agent/AgentTeam";
+import TokenRingApp from "@tokenring-ai/app";
 import type {WebResource} from "@tokenring-ai/web-host/types";
 import type {FastifyInstance} from "fastify";
 
@@ -24,7 +24,10 @@ type ServerMessage =
 export default class AgentAPIResource implements WebResource {
   name = "AgentAPI";
 
-  constructor(private agentTeam: AgentTeam) {
+  protected agentManager: AgentManager;
+
+  constructor(private app: TokenRingApp) {
+    this.agentManager = app.requireService(AgentManager);
   }
 
   async register(server: FastifyInstance): Promise<void> {
@@ -53,24 +56,26 @@ export default class AgentAPIResource implements WebResource {
         try {
           const msg: ClientMessage = JSON.parse(data.toString());
 
+
+
           switch (msg.type) {
             case "listAgents":
-              const agents = this.agentTeam.getAgents().map(a => ({
+              const agents = this.agentManager.getAgents().map(a => ({
                 id: a.id,
-                name: a.options.name,
-                type: a.options.type,
+                name: a.config.name,
+                type: a.config.type,
               }));
               send({type: "agentList", agents});
               break;
 
             case "createAgent":
-              const agentConfigService = this.agentTeam.requireService(AgentConfigService);
-              const agent = await agentConfigService.spawnAgent(msg.agentType, this.agentTeam);
-              send({type: "agentCreated", agentId: agent.id, name: agent.options.name});
+              const agentManager = this.app.requireService(AgentManager);
+              const agent = await agentManager.spawnAgent(msg.agentType);
+              send({type: "agentCreated", agentId: agent.id, name: agent.config.name});
               break;
 
             case "connectAgent":
-              const targetAgent = this.agentTeam.getAgent(msg.agentId);
+              const targetAgent = this.agentManager.getAgent(msg.agentId);
               if (!targetAgent) {
                 send({type: "error", message: "Agent not found"});
                 break;
@@ -100,9 +105,9 @@ export default class AgentAPIResource implements WebResource {
               break;
 
             case "deleteAgent":
-              const agentToDelete = this.agentTeam.getAgent(msg.agentId);
+              const agentToDelete = this.agentManager.getAgent(msg.agentId);
               if (agentToDelete) {
-                await this.agentTeam.deleteAgent(agentToDelete);
+                await this.agentManager.deleteAgent(agentToDelete);
                 send({type: "agentDeleted", agentId: msg.agentId});
               }
               break;
