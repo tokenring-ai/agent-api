@@ -1,10 +1,13 @@
 {
  "name": "@tokenring-ai/agent-api",
- "version": "0.1.0",
+ "version": "0.2.0",
  "description": "WebSocket API for TokenRing agents",
  "dependencies": {
-  "@tokenring-ai/agent": "0.1.0",
-  "@tokenring-ai/web-host": "0.1.0",
+  "@tokenring-ai/app": "0.2.0",
+  "@tokenring-ai/chat": "0.2.0",
+  "zod": "^4.1.13",
+  "@tokenring-ai/agent": "0.2.0",
+  "@tokenring-ai/web-host": "0.2.0",
   "fastify": "^5.6.2"
  },
  "exports": {
